@@ -2,11 +2,17 @@ version: 2.1
 
 jobs:
   test_test_and_deploy:
-    docker:
-      - image: docker:17.05.0-ce-git
+    machine:
+      image: ubuntu-2004:202010-01
     steps:
-      - checkout
+      - run:
+          name: Install Docker Compose
+          command: |
+            curl -L https://github.com/docker/compose/releases/download/1.25.3/docker-compose-`uname -s`-`uname -m` > ~/docker-compose
+            chmod +x ~/docker-compose
+            sudo mv ~/docker-compose /usr/local/bin/docker-compose
       - setup_remote_docker
+      - checkout
       - run:
           name: Building services
           command: |
