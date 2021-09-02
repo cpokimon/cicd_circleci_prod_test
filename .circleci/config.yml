@@ -21,6 +21,8 @@ jobs:
           name: Deploy on test machine
           command: |
             ssh $AZURE_USER_NAME@$AZURE_HOST -p$AZURE_PORT /bin/bash \<<'\ENDSSH'
+            ls
+            pwd
             sudo reboot
             \ENDSSH
 
