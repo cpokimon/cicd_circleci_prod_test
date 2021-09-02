@@ -16,7 +16,7 @@ jobs:
           name: Running tests
           command: |
             docker-compose run my_service python ./tests.py
-      - run: ssh-keyscan -H 157.231.110.01 >> ~/.ssh/known_hosts
+      - run: ssh-keyscan -H $AZURE_HOST >> ~/.ssh/known_hosts
       - run:
           name: Deploy on test machine
           command: |
