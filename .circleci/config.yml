@@ -22,7 +22,7 @@ jobs:
           command: |
             ssh $AZURE_USER_NAME@$AZURE_HOST -p$AZURE_PORT \<<'\ENDSSH'
             sudo reboot
-            ENDSSH
+            \ENDSSH
 
 
 
