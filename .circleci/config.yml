@@ -5,6 +5,7 @@ jobs:
     machine:
       image: ubuntu-2004:202010-01
     steps:
+      - add_ssh_keys
       - checkout
       - run:
           name: Building services
@@ -15,10 +16,11 @@ jobs:
           name: Running tests
           command: |
             docker-compose run my_service python ./tests.py
+      - run: ssh-keyscan -H 157.231.110.01 >> ~/.ssh/known_hosts
       - run:
           name: Deploy on test machine
           command: |
-            ssh-rsa $AZURE_SSH_KEY $AZURE_USER_NAME@$AZURE_HOST
+            ssh $AZURE_USER_NAME@$AZURE_HOST -p$AZURE_PORT
             cd cicd_circleci_prod_test/
             git checkout test
             git pull origin test
