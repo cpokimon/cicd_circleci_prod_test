@@ -8,6 +8,7 @@ jobs:
       - run:
           name: Building services
           command: |
+            ls
             docker-compose up -d
       - run:
           name: Running tests
