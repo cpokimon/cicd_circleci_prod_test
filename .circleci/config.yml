@@ -18,7 +18,7 @@ jobs:
       - run:
           name: Deploy on test machine
           command: |
-            ssh $AZURE_USER_NAME@$AZURE_HOST -p$AZURE_PORT -y $AZURE_USER_PASSWORD
+            ssh-rsa $AZURE_SSH_KEY $AZURE_USER_NAME@$AZURE_HOST
             cd cicd_circleci_prod_test/
             git checkout test
             git pull origin test
