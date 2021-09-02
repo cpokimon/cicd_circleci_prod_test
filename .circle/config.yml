@@ -1,0 +1,26 @@
+version: 2.1
+
+jobs:
+  test_test_and_deploy:
+    docker:
+      - image: docker:17.05.0-ce-git
+    steps:
+      - checkout
+      - setup_remote_docker
+      - run:
+          name: Building services
+          command: |
+            docker-compose up
+      - run:
+          name: Running tests
+          command: |
+            docker-compose run my_service python ./tests.py
+
+
+workfrows:
+  test:
+    jobs:
+      - test_test_and_deploy:
+          filters:
+            branches:
+              only: test
