@@ -24,8 +24,10 @@ jobs:
             cd cicd_circleci_prod_test/
             git checkout test
             git pull origin test
+            ls
             docker-compose stop -t 1
             docker-compose up --build -d
+            exit 0
 
 workflows:
   version: 2
