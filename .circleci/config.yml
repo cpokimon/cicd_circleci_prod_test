@@ -23,6 +23,7 @@ jobs:
             ssh $AZURE_USER_NAME@$AZURE_HOST -p$AZURE_PORT 'sudo reboot'
 
 
+
 workflows:
   version: 2
   test:
