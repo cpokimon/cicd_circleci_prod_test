@@ -20,7 +20,9 @@ jobs:
       - run:
           name: Deploy on test machine
           command: |
-            echo ssh $AZURE_USER_NAME@$AZURE_HOST -p$AZURE_PORT 'sudo reboot'
+            ssh $AZURE_USER_NAME@$AZURE_HOST -p$AZURE_PORT <<'ENDSSH'
+            sudo reboot
+            ENDSSH
 
 
 
