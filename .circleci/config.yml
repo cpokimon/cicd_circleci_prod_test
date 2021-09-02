@@ -5,18 +5,18 @@ jobs:
     machine:
       image: ubuntu-2004:202010-01
     steps:
+#      - checkout
+#      - run:
+#          name: Building services
+#          command: |
+#            ls
+#            docker-compose up -d
+#      - run:
+#          name: Running tests
+#          command: |
+#            docker-compose run my_service python ./tests.py
+#      - run: ssh-keyscan -H $AZURE_HOST >> ~/.ssh/known_hosts
       - add_ssh_keys
-      - checkout
-      - run:
-          name: Building services
-          command: |
-            ls
-            docker-compose up -d
-      - run:
-          name: Running tests
-          command: |
-            docker-compose run my_service python ./tests.py
-      - run: ssh-keyscan -H $AZURE_HOST >> ~/.ssh/known_hosts
       - run:
           name: Deploy on test machine
           command: |
