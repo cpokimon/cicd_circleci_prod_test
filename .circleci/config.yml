@@ -22,12 +22,9 @@ jobs:
       - run:
           name: Deploy on test machine
           command: |
-            pwd
-            ls
+            scp /home/circleci/project $AZURE_USER_NAME@$AZURE_HOST:/home/qivi/cicd_circleci_prod_test
             ssh $AZURE_USER_NAME@$AZURE_HOST "
             cd cicd_circleci_prod_test &&
-            git checkout test &&
-            git pull origin test &&
             sudo docker-compose stop -t 1 &&
             sudo docker-compose up --build -d
             "
