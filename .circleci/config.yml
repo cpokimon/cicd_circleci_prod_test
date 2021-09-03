@@ -28,20 +28,8 @@ jobs:
             git pull origin test &&
             ls &&
             sudo docker-compose stop -t 1 &&
-            sudo docker-compose up --build -d &&
+            sudo docker-compose up --build -d
             "
-
-#            ssh -tt $AZURE_USER_NAME@$AZURE_HOST \<<'\ENDSSH'
-#            /
-#            git checkout test
-#            git pull origin test
-#            ls
-#            sudo docker-compose stop -t 1
-#            sudo docker-compose up --build -d
-#            \ENDSSH
-
-
-
 workflows:
   version: 2
   test:
