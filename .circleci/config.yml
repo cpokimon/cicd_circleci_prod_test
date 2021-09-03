@@ -16,18 +16,28 @@ jobs:
 #          command: |
 #            docker-compose run my_service python ./tests.py
 #      - run: ssh-keyscan -H $AZURE_HOST >> ~/.ssh/known_hosts
-      - add_ssh_keys
+      - add_ssh_keys:
+          fingerprints:
+            - $AZURE_VM_SSH_FINGERPRINT
       - run:
           name: Deploy on test machine
           command: |
-            ssh -tt $AZURE_USER_NAME@$AZURE_HOST \<<'\ENDSSH'
-            cd cicd_circleci_prod_test/
-            git checkout test
-            git pull origin test
-            ls
-            sudo docker-compose stop -t 1
-            sudo docker-compose up --build -d
-            \ENDSSH
+            ssh $AZURE_USER_NAME@$AZURE_HOST "
+            cd cicd_circleci_prod_test &&
+            git checkout test &&
+            git pull origin test &&
+            ls &&
+            sudo docker-compose stop -t 1 &&
+            sudo docker-compose up --build -d &&
+            "
+#            ssh -tt $AZURE_USER_NAME@$AZURE_HOST \<<'\ENDSSH'
+#            /
+#            git checkout test
+#            git pull origin test
+#            ls
+#            sudo docker-compose stop -t 1
+#            sudo docker-compose up --build -d
+#            \ENDSSH
 
 
 
