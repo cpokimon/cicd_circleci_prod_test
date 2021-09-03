@@ -30,6 +30,7 @@ jobs:
             sudo docker-compose stop -t 1 &&
             sudo docker-compose up --build -d &&
             "
+
 #            ssh -tt $AZURE_USER_NAME@$AZURE_HOST \<<'\ENDSSH'
 #            /
 #            git checkout test
