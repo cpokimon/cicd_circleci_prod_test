@@ -22,6 +22,7 @@ jobs:
       - run:
           name: Deploy on test machine
           command: |
+            pwd
             ls
             ssh $AZURE_USER_NAME@$AZURE_HOST "
             cd cicd_circleci_prod_test &&
