@@ -29,6 +29,7 @@ commands:
             docker ps
             ls
             pwd
+            docker images
             docker login -u $DOCKER_HUB_USER_ID -p $DOCKER_HUB_PWD
             docker image tag <<parameters.image>> $DOCKER_HUB_USER_ID/$DOCKER_HUB_REPO_NAME:$CIRCLE_SHA1
             docker image tag <<parameters.image>> $DOCKER_HUB_USER_ID/$DOCKER_HUB_REPO_NAME:latest
@@ -108,11 +109,11 @@ workflows:
           filters:
             branches:
               only: main
-      - approve_publish_and_deploy:
-          type: approval
-          requires:
-            - prod_build_and_test
+#      - approve_publish_and_deploy:
+#          type: approval
+#          requires:
+#            - prod_build_and_test
       - prod_publish_and_deploy:
           requires:
             - prod_build_and_test
-            - approve_publish_and_deploy
+#            - approve_publish_and_deploy
