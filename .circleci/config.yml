@@ -105,7 +105,10 @@ workflows:
           filters:
             branches:
               only: main
-      - prod_publish_and_deploy:
+      - approve_publish_and_deploy:
           type: approval
           requires:
             - prod_build_and_test
+      - prod_publish_and_deploy:
+          requires:
+            - approve_publish_and_deploy
