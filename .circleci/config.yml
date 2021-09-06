@@ -27,6 +27,8 @@ commands:
           name: Publish on Dockerhub
           command: |
             docker ps
+            ls
+            pwd
             docker login -u $DOCKER_HUB_USER_ID -p $DOCKER_HUB_PWD
             docker image tag <<parameters.image>> $DOCKER_HUB_USER_ID/$DOCKER_HUB_REPO_NAME:$CIRCLE_SHA1
             docker image tag <<parameters.image>> $DOCKER_HUB_USER_ID/$DOCKER_HUB_REPO_NAME:latest
