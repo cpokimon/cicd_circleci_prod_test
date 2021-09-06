@@ -3,6 +3,9 @@ version: 2.1
 commands:
   build_and_test:
     parameters:
+      persist:
+        default: false
+        type: boolean
       image_to_output:
         default: "cicd_test"
         type: string
@@ -22,10 +25,13 @@ commands:
       - run:
           name: Saving image
           command: docker images && docker save -o ./my_service_image.tar $DOCKER_HUB_USER_ID/<<parameters.image_to_output>>
-      - persist_to_workspace:
-          root: .
-          paths:
-            - .
+      when:
+        condition: <<parameters.persist>>
+        steps:
+          - persist_to_workspace:
+              root: .
+              paths:
+                - .
   publish:
     parameters:
       image:
@@ -44,7 +50,6 @@ commands:
             docker image tag <<parameters.image>> $DOCKER_HUB_USER_ID/$DOCKER_HUB_REPO_NAME:latest
             docker push $DOCKER_HUB_USER_ID/$DOCKER_HUB_REPO_NAME:$CIRCLE_SHA1
             docker push $DOCKER_HUB_USER_ID/$DOCKER_HUB_REPO_NAME:latest
-
   deploy:
     parameters:
       command:
@@ -87,18 +92,11 @@ jobs:
       - build_and_test:
           build_command: docker-compose -f docker-compose.yml -f docker-compose.test.yml up -d
           test_command: docker-compose -f docker-compose.yml -f docker-compose.test.yml run my_service python ./tests.py
+          persist: true
   prod_publish_and_deploy:
     machine:
       image: ubuntu-2004:202010-01
     steps:
-#      - run:
-#          name: Publish on Dockerhub
-#          command: |
-#            docker login -u $DOCKER_HUB_USER_ID -p $DOCKER_HUB_PWD
-#            docker image tag cicd_circleci_prod_test_my_service $DOCKER_HUB_USER_ID/$DOCKER_HUB_REPO_NAME:$CIRCLE_SHA1
-#            docker image tag cicd_circleci_prod_test_my_service $DOCKER_HUB_USER_ID/$DOCKER_HUB_REPO_NAME:latest
-#            docker push $DOCKER_HUB_USER_ID/$DOCKER_HUB_REPO_NAME:$CIRCLE_SHA1
-#            docker push $DOCKER_HUB_USER_ID/$DOCKER_HUB_REPO_NAME:latest
       - publish
       - deploy:
           command: sudo docker-compose -p app_prod -f docker-compose.yml -f docker-compose.prod.yml up --build -d
@@ -118,11 +116,11 @@ workflows:
           filters:
             branches:
               only: main
-#      - approve_publish_and_deploy:
-#          type: approval
-#          requires:
-#            - prod_build_and_test
+      - approve_publish_and_deploy:
+          type: approval
+          requires:
+            - prod_build_and_test
       - prod_publish_and_deploy:
           requires:
             - prod_build_and_test
-#            - approve_publish_and_deploy
+            - approve_publish_and_deploy
