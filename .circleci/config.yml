@@ -4,7 +4,7 @@ commands:
   build_and_test:
     parameters:
       build_command:
-        default: docker-compose -f docker-compose.yml -f docker-compose.test.yml up -d
+        default: pwd && docker-compose -f docker-compose.yml -f docker-compose.test.yml up -d
         type: string
       test_command:
         default: docker-compose -f docker-compose.yml -f docker-compose.test.yml run my_service python ./tests.py
@@ -20,7 +20,7 @@ commands:
   publish:
     parameters:
       image:
-        default: "cicd_circleci_prod_test_my_service"
+        default: "cicd_test_my_service"
         type: string
     steps:
       - run:
