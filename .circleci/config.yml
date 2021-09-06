@@ -21,7 +21,7 @@ commands:
           command: docker-compose run my_service python ./tests.py
       - run:
           name: Saving image
-          command: docker images && docker save -o ./my_service_image.tar <<parameters.image_to_output>>
+          command: docker images && docker save -o ./my_service_image.tar $DOCKER_HUB_USER_ID/<<parameters.image_to_output>>
       - persist_to_workspace:
           root: /tmp/workspace
           paths:
