@@ -1,11 +1,7 @@
 version: "3"
 services:
   my_service:
-    build:
-      context: .
-      dockerfile: Dockerfile.dev
-    volumes:
-      - ./service/:/usr/app
+    image: qivi/cicd_test:latest
     ports:
       - 5000:5000
     command: gunicorn --bind 0.0.0.0:5000 wsgi_debug:app
