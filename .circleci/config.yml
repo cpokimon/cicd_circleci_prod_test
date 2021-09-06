@@ -147,4 +147,4 @@ workflows:
       - prod_publish_and_deploy:
           type: approval
           requires:
-            - prod_buil_and_test
+            - prod_build_and_test
