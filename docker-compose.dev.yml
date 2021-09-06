@@ -6,3 +6,4 @@ services:
       dockerfile: Dockerfile.dev
     volumes:
       - ./service/:/usr/app
+#    command: gunicorn --bind 0.0.0.0:5000 wsgi_debug:app

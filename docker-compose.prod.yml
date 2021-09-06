@@ -1,0 +1,5 @@
+version: "3"
+services:
+  my_service:
+    image: qivi/cicd_test:latest
+    command: gunicorn --bind 0.0.0.0:8080 wsgi:app

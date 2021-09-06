@@ -6,28 +6,59 @@ jobs:
       image: ubuntu-2004:202010-01
     steps:
       - checkout
-#      - run:
-#          name: Building services
-#          command: |
-#            ls
-#            docker-compose up -d
-#      - run:
-#          name: Running tests
-#          command: |
-#            docker-compose run my_service python ./tests.py
-#      - run: ssh-keyscan -H $AZURE_HOST >> ~/.ssh/known_hosts
-#      - add_ssh_keys:
-#          fingerprints:
-#            - $AZURE_SSH_KEY_FINGERPRINT
+      - run:
+          name: Building services for test branch
+          command: |
+            docker-compose up -d
+      - run:
+          name: Running tests for test branch
+          command: |
+            docker-compose run my_service python ./tests.py
       - run:
           name: Deploy on test machine
           command: |
-            scp -r /home/circleci/project $AZURE_USER_NAME@$AZURE_HOST:/home/qivi/cicd_circleci_prod_test/
+#            scp -r /home/circleci/project $AZURE_USER_NAME@$AZURE_HOST:/home/qivi/cicd_circleci_prod_test/
             ssh $AZURE_USER_NAME@$AZURE_HOST "
             cd cicd_circleci_prod_test &&
+            git checkout test &&
+            git pull origin test &&
             sudo docker-compose stop -t 1 &&
             sudo docker-compose up --build -d
             "
+  prod_build_and_test:
+    machine:
+      image: ubuntu-2004:202010-01
+    steps:
+      - checkout
+      - run:
+          name: Building services for production
+          command: docker-compose up -d
+      - run:
+          name: Running tests for test branch
+          command: docker-compose run my_service python ./tests.py
+  prod_publish_and_deploy:
+    machine:
+      image: ubuntu-2004:202010-01
+    steps:
+      - run:
+          name: Publish on Dockerhub
+          command: |
+            docker login -u $DOCKER_HUB_USER_ID -p $DOCKER_HUB_PWD
+            docker image tag cicd_circleci_prod_test_my_service $DOCKER_HUB_USER_ID/$DOCKER_HUB_REPO_NAME:$CIRCLE_SHA1
+            docker image tag cicd_circleci_prod_test_my_service $DOCKER_HUB_USER_ID/$DOCKER_HUB_REPO_NAME:latest
+            docker push $DOCKER_HUB_USER_ID/$DOCKER_HUB_REPO_NAME:$CIRCLE_SHA1
+            docker push $DOCKER_HUB_USER_ID/$DOCKER_HUB_REPO_NAME:latest
+      - run:
+          name: Deploy on test machine
+          command: |
+  #            scp -r /home/circleci/project $AZURE_USER_NAME@$AZURE_HOST:/home/qivi/cicd_circleci_prod_test/
+           ssh $AZURE_USER_NAME@$AZURE_HOST "
+           cd cicd_circleci_prod_test &&
+           git checkout master &&
+           git pull origin master &&
+           sudo docker-compose stop -t 1 &&
+           sudo docker-compose -f docker-compose.yml -f docker-compose.prod.yml up --build -d
+           "
 workflows:
   version: 2
   test:
@@ -36,3 +67,13 @@ workflows:
           filters:
             branches:
               only: test
+  prod:
+    jobs:
+      - prod_build_and_test:
+          filters:
+            branches:
+              only: main
+      - prod_publish_and_deploy:
+          type: approval
+          requires:
+            - prod_buil_and_test
