@@ -1,64 +1,96 @@
 version: 2.1
 
+commands:
+  build_and_test:
+    parameters:
+      build_command:
+        default: docker-compose -f docker-compose.yml -f docker-compose.test.yml up -d
+        type: string
+      test_command:
+        default: docker-compose -f docker-compose.yml -f docker-compose.test.yml run my_service python ./tests.py
+        type: string
+    steps:
+      - run:
+          name: Building services for <<pipeline.git.branch>>
+          command: <<parameters.build_command>>
+      - run:
+          name: Running tests for <<pipeline.git.branch>> branch
+          command: docker-compose run my_service python ./tests.py
+
+  publish:
+    parameters:
+      image:
+        default: "cicd_circleci_prod_test_my_service"
+        type: string
+    steps:
+      - run:
+          name: Publish on Dockerhub
+          command: |
+            docker login -u $DOCKER_HUB_USER_ID -p $DOCKER_HUB_PWD
+            docker image tag <<parameters.image>> $DOCKER_HUB_USER_ID/$DOCKER_HUB_REPO_NAME:$CIRCLE_SHA1
+            docker image tag <<parameters.image>> $DOCKER_HUB_USER_ID/$DOCKER_HUB_REPO_NAME:latest
+            docker push $DOCKER_HUB_USER_ID/$DOCKER_HUB_REPO_NAME:$CIRCLE_SHA1
+            docker push $DOCKER_HUB_USER_ID/$DOCKER_HUB_REPO_NAME:latest
+
+  deploy:
+    parameters:
+      command:
+        default: "sudo docker-compose -f docker-compose.yml -f docker-compose.prod.yml up --build -d"
+        type: string
+      stop_command:
+        default: "sudo docker-compose -f docker-compose.yml -f docker-compose.prod.yml stop"
+        type: string
+    steps:
+      - run:
+          name: Deploy on vps
+          command: |
+            ssh $AZURE_USER_NAME@$AZURE_HOST "
+            cd cicd_circleci_prod_test &&
+            git checkout <<pipeline.git.branch>> &&
+            git pull origin <<pipeline.git.branch>> &&
+            sudo docker-compose stop -t 1 &&
+            <<parameters.stop_command>> &&
+            <<parameters.command>>
+            "
+
 jobs:
   test_test_and_deploy:
     machine:
       image: ubuntu-2004:202010-01
     steps:
       - checkout
-      - run:
-          name: Building services for test branch
-          command: |
-            docker-compose up -d
-      - run:
-          name: Running tests for test branch
-          command: |
-            docker-compose run my_service python ./tests.py
-      - run:
-          name: Deploy on test machine
-          command: |
-#            scp -r /home/circleci/project $AZURE_USER_NAME@$AZURE_HOST:/home/qivi/cicd_circleci_prod_test/
-            ssh $AZURE_USER_NAME@$AZURE_HOST "
-            cd cicd_circleci_prod_test &&
-            git checkout test &&
-            git pull origin test &&
-            sudo docker-compose stop -t 1 &&
-            sudo docker-compose up --build -d
-            "
+      - build_and_test:
+          build_command: docker-compose -f docker-compose.yml -f docker-compose.test.yml up -d
+          test_command: docker-compose -f docker-compose.yml -f docker-compose.test.yml run my_service python ./tests.py
+      - deploy:
+          command: sudo docker-compose -p app_test -f docker-compose.yml -f docker-compose.test.yml up --build -d
+          stop_command: sudo docker-compose -p app_test -f docker-compose.yml -f docker-compose.test.yml stop
+
   prod_build_and_test:
     machine:
       image: ubuntu-2004:202010-01
     steps:
       - checkout
-      - run:
-          name: Building services for production
-          command: docker-compose up -d
-      - run:
-          name: Running tests for test branch
-          command: docker-compose run my_service python ./tests.py
+      - build_and_test:
+          build_command: docker-compose -f docker-compose.yml -f docker-compose.test.yml up -d
+          test_command: docker-compose -f docker-compose.yml -f docker-compose.test.yml run my_service python ./tests.py
   prod_publish_and_deploy:
     machine:
       image: ubuntu-2004:202010-01
     steps:
-      - run:
-          name: Publish on Dockerhub
-          command: |
-            docker login -u $DOCKER_HUB_USER_ID -p $DOCKER_HUB_PWD
-            docker image tag cicd_circleci_prod_test_my_service $DOCKER_HUB_USER_ID/$DOCKER_HUB_REPO_NAME:$CIRCLE_SHA1
-            docker image tag cicd_circleci_prod_test_my_service $DOCKER_HUB_USER_ID/$DOCKER_HUB_REPO_NAME:latest
-            docker push $DOCKER_HUB_USER_ID/$DOCKER_HUB_REPO_NAME:$CIRCLE_SHA1
-            docker push $DOCKER_HUB_USER_ID/$DOCKER_HUB_REPO_NAME:latest
-      - run:
-          name: Deploy on test machine
-          command: |
-  #            scp -r /home/circleci/project $AZURE_USER_NAME@$AZURE_HOST:/home/qivi/cicd_circleci_prod_test/
-           ssh $AZURE_USER_NAME@$AZURE_HOST "
-           cd cicd_circleci_prod_test &&
-           git checkout master &&
-           git pull origin master &&
-           sudo docker-compose stop -t 1 &&
-           sudo docker-compose -f docker-compose.yml -f docker-compose.prod.yml up --build -d
-           "
+#      - run:
+#          name: Publish on Dockerhub
+#          command: |
+#            docker login -u $DOCKER_HUB_USER_ID -p $DOCKER_HUB_PWD
+#            docker image tag cicd_circleci_prod_test_my_service $DOCKER_HUB_USER_ID/$DOCKER_HUB_REPO_NAME:$CIRCLE_SHA1
+#            docker image tag cicd_circleci_prod_test_my_service $DOCKER_HUB_USER_ID/$DOCKER_HUB_REPO_NAME:latest
+#            docker push $DOCKER_HUB_USER_ID/$DOCKER_HUB_REPO_NAME:$CIRCLE_SHA1
+#            docker push $DOCKER_HUB_USER_ID/$DOCKER_HUB_REPO_NAME:latest
+      - publish
+      - deploy:
+          command: sudo docker-compose -p app_prod -f docker-compose.yml -f docker-compose.prod.yml up --build -d
+          stop_command: sudo docker-compose -p app_prod -f docker-compose.yml -f docker-compose.prod.yml stop
+
 workflows:
   version: 2
   test:
@@ -76,4 +108,4 @@ workflows:
       - prod_publish_and_deploy:
           type: approval
           requires:
-            - prod_buil_and_test
+            - prod_build_and_test
