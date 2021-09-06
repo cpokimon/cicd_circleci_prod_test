@@ -112,4 +112,5 @@ workflows:
             - prod_build_and_test
       - prod_publish_and_deploy:
           requires:
+            - prod_build_and_test
             - approve_publish_and_deploy
