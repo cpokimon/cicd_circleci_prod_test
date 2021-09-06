@@ -3,6 +3,9 @@ version: 2.1
 commands:
   build_and_test:
     parameters:
+      image_to_output:
+        default: "cicd_test_my_service"
+        type: string
       build_command:
         default: docker-compose -f docker-compose.yml -f docker-compose.test.yml up -d
         type: string
@@ -12,23 +15,29 @@ commands:
     steps:
       - run:
           name: Building services for <<pipeline.git.branch>>
-          command: pwd && <<parameters.build_command>>
+          command: <<parameters.build_command>>
       - run:
           name: Running tests for <<pipeline.git.branch>> branch
-          command: docker images && docker-compose run my_service python ./tests.py
-
+          command: docker-compose run my_service python ./tests.py
+      - run:
+          name: Saving image
+          command: docker save -o ./my_service_image.tar <<parameters.image_to_output>>
+      - persist_to_workspace:
+          root: /tmp/workspace
+          paths:
+            - ./
   publish:
     parameters:
       image:
         default: "cicd_test_my_service"
         type: string
     steps:
+      - attach_workspace:
+          at: /tmp/workspace
       - run:
           name: Publish on Dockerhub
           command: |
-            docker ps
-            ls
-            pwd
+            docker load -i ./my_service_image.tar
             docker images
             docker login -u $DOCKER_HUB_USER_ID -p $DOCKER_HUB_PWD
             docker image tag <<parameters.image>> $DOCKER_HUB_USER_ID/$DOCKER_HUB_REPO_NAME:$CIRCLE_SHA1
