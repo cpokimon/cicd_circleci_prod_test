@@ -12,10 +12,10 @@ commands:
     steps:
       - run:
           name: Building services for <<pipeline.git.branch>>
-          command: pwd && docker images && <<parameters.build_command>>
+          command: pwd && <<parameters.build_command>>
       - run:
           name: Running tests for <<pipeline.git.branch>> branch
-          command: docker-compose run my_service python ./tests.py
+          command: docker images && docker-compose run my_service python ./tests.py
 
   publish:
     parameters:
