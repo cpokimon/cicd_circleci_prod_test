@@ -23,9 +23,9 @@ commands:
           name: Saving image
           command: docker images && docker save -o ./my_service_image.tar $DOCKER_HUB_USER_ID/<<parameters.image_to_output>>
       - persist_to_workspace:
-          root: /tmp/workspace
+          root: .
           paths:
-            - ./
+            - .
   publish:
     parameters:
       image:
@@ -33,7 +33,7 @@ commands:
         type: string
     steps:
       - attach_workspace:
-          at: /tmp/workspace
+          at: .
       - run:
           name: Publish on Dockerhub
           command: |
