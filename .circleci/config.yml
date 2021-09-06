@@ -26,7 +26,8 @@ commands:
           name: Saving image
           command: docker images && docker save -o ./my_service_image.tar $DOCKER_HUB_USER_ID/<<parameters.image_to_output>>
       when:
-        condition: <<parameters.persist>>
+        condition:
+          equal: [ true, <<parameters.persist>> ]
         steps:
           - persist_to_workspace:
               root: .
