@@ -29,7 +29,7 @@ commands:
   publish:
     parameters:
       image:
-        default: "cicd_test"
+        default: "qivi/cicd_test"
         type: string
     steps:
       - attach_workspace:
