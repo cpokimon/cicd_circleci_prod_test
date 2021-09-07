@@ -67,7 +67,7 @@ commands:
             cd cicd_circleci_prod_test &&
             git checkout <<pipeline.git.branch>> &&
             git pull origin <<pipeline.git.branch>> &&
-            sudo docker-compose stop -t 1 &&
+#            sudo docker-compose stop -t 1 &&
             <<parameters.stop_command>> &&
             <<parameters.command>>
             "
@@ -85,7 +85,7 @@ jobs:
           command: |
             sudo docker-compose -p app_test -f docker-compose.yml -f docker-compose.test.yml up --build -d &&
             sudo docker-compose -f docker-compose.yml -f docker-compose.test.yml run my_service python main.py migrate
-          stop_command: sudo docker-compose -p app_test -f docker-compose.yml -f docker-compose.test.yml stop
+          stop_command: sudo docker-compose -p app_test -f docker-compose.yml -f docker-compose.test.yml stop -t 1
 
   prod_build_and_test:
     machine:
@@ -107,7 +107,7 @@ jobs:
           command: |
             sudo docker-compose -p app_prod -f docker-compose.yml -f docker-compose.prod.yml up --build -d &&
             sudo docker-compose -f docker-compose.yml -f docker-compose.prod.yml run my_service python main.py migrate
-          stop_command: sudo docker-compose -p app_prod -f docker-compose.yml -f docker-compose.prod.yml stop
+          stop_command: sudo docker-compose -p app_prod -f docker-compose.yml -f docker-compose.prod.yml stop -t 1
 
 workflows:
   version: 2
