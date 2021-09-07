@@ -67,7 +67,6 @@ commands:
             cd cicd_circleci_prod_test &&
             git checkout <<pipeline.git.branch>> &&
             git pull origin <<pipeline.git.branch>> &&
-#            sudo docker-compose stop -t 1 &&
             <<parameters.stop_command>> &&
             <<parameters.command>>
             "
