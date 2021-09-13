@@ -21,7 +21,7 @@ commands:
           command: <<parameters.build_command>>
       - run:
           name: Running tests for <<pipeline.git.branch>> branch
-          command: docker-compose run my_service python ./tests.py
+          command: <<parameters.test_command>>
       - run:
           name: Saving image
           command: docker images && docker save -o ./my_service_image.tar $DOCKER_HUB_USER_ID/<<parameters.image_to_output>>
